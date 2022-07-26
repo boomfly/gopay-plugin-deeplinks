@@ -38,6 +38,15 @@ static NSString *const URL_PARAMS_ATTRIBUTE = @"params";
 
 #pragma mark Public API
 
++ (instancetype)resultWithScheme:(CULScheme *)scheme originalURL:(NSURL *)originalURL {
+    NSDictionary *message = [self prepareMessageForScheme:scheme originalURL:originalURL];
+
+    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+    [result setKeepCallbackAsBool:YES];
+
+    return result;
+}
+
 + (instancetype)resultWithHost:(CULHost *)host originalURL:(NSURL *)originalURL {
     NSDictionary *message = [self prepareMessageForHost:host originalURL:originalURL];
     
@@ -67,6 +76,19 @@ static NSString *const URL_PARAMS_ATTRIBUTE = @"params";
 }
 
 #pragma mark Private API
+
++ (NSDictionary *)prepareMessageForScheme:(CULScheme *)scheme originalURL:(NSURL *)originalURL {
+    NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:originalURL resolvingAgainstBaseURL:YES];
+    NSMutableDictionary *messageDict = [[NSMutableDictionary alloc] init];
+
+    NSString *eventName = scheme.event;
+    [messageDict setObject:eventName forKey:EVENT];
+
+    NSDictionary *data = [self getDataDictionaryForURLComponents:urlComponents];
+    [messageDict setObject:data forKey:DATA];
+
+    return messageDict;
+}
 
 /**
  *  Create dictionary for message, that should be send to JS.

@@ -1,6 +1,7 @@
-# Cordova Deeplinks Plugin
+# GoPay Deeplinks Plugin
 
-**NOTE:** This is a fork from the original cordova plugin "cordova-deeplinks" that in turn is a fork from "cordova-universal-links-plugin"
+**NOTE:** This is a fork from the cordova plugin "cordova-plugin-deeplinks that is in turn a fork from
+ original cordova plugin "cordova-deeplinks" that in turn is a fork from "cordova-universal-links-plugin".
 
 This Cordova plugin adds support for opening an application from the browser when user clicks on the link. Better known as:
 - [Universal Links on iOS](https://developer.apple.com/library/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html)
@@ -8,10 +9,12 @@ This Cordova plugin adds support for opening an application from the browser whe
 
 Basically, you can have a single link that will either open your app or your website, if the app isn't installed.
 
+Additionally it handles custom schemes for your app such as `mycoolapp://deep/link`.
+
 Integration process is simple:
 
 1. Add the plugin to your project (see [Installation](#installation)).
-2. Define supported hosts and paths in Cordova's `config.xml` (see [Cordova config preferences](#cordova-config-preferences)).
+2. Define supported schemes, hosts and paths in Cordova's `config.xml` (see [Cordova config preferences](#cordova-config-preferences)).
 3. Write some JavaScript code to listen for application launch by the links (see [Application launch handling](#application-launch-handling)).
 4. Build project from the CLI.
 5. Activate support for UL on your website (see [Android web integration](#android-web-integration) and [iOS web integration](#ios-web-integration)).
@@ -51,13 +54,13 @@ It is important not only to redirect users to your app from the web, but also pr
 This requires cordova 5.0+ (current stable 1.2.1)
 
 ```sh
-cordova plugin add cordova-plugin-deeplinks
+cordova plugin add gopay-plugin-deeplinks
 ```
 
 It is also possible to install via repo url directly (**unstable**)
 
 ```sh
-cordova plugin add https://github.com/e-imaxina/cordova-plugin-deeplinks.git
+cordova plugin add github:FacilityNet/gopay-plugin-deeplinks.git
 ```
 
 ### Cordova config preferences
@@ -68,13 +71,31 @@ Those preferences are specified inside the `<universal-links>` block. For exampl
 
 ```xml
 <universal-links>
+    <scheme name="mycoolapp">
     <host name="example.com">
         <path url="/some/path" />
     </host>
 </universal-links>
 ```
 
-In it you define hosts and paths that application should handle. You can have as many hosts and paths as you like.
+In it you define hosts and paths that application should handle. You can have as many hosts and paths as you like. You also define custom schemes to handle.
+
+#### scheme
+`<scheme />` tag lets you describe custom schemes that your app supports. It can have two attributes:
+- `name` - name of scheme. **This is a required attribute.**
+- `event` - name of the event that is used to match app launch from this scheme to a callback on the JS
+side. If not set - pass `null` as event name when you are subscribing in JS code.
+
+For example,
+
+```xml
+<universal-links>
+    <scheme name="mycoolapp" event="ul_customscheme" />
+</universal-links>
+```
+
+defines that when an app invokes the scheme `mycoolapp` - callback that was set for
+`ul_customscheme` gets called.
 
 #### host
 `<host />` tag lets you describe hosts, that your application supports. It can have three attributes:

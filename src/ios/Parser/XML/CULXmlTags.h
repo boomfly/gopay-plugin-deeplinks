@@ -17,6 +17,21 @@
 extern NSString *const kCULMainXmlTag;
 
 /**
+ * Scheme main tag
+ */
+extern NSString *const kCULSchemeXmlTag;
+
+/**
+ * Name attribute for the scheme entry
+ */
+extern NSString *const kCULSchemeNameXmlAttribute;
+
+/**
+ * Event attribute for the scheme entry
+ */
+extern NSString *const kCULSchemeEventXmlAttribute;
+
+/**
  *  Host main tag
  */
 extern NSString *const kCULHostXmlTag;

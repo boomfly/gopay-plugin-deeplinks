@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<plugin id="cordova-plugin-deeplinks" version="1.1.1" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="gopay-plugin-deeplinks" version="2.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
 
-  <name>Cordova Deeplinks Plugin</name>
+  <name>GoPay Deeplinks Plugin</name>
   <description>
     Cordova plugin to add in your application support for Universal Links (iOS 9) and Deep Links (Android).
-    Basically, open application through the link in the browser.
+    Basically, open application through the link in the browser. Also supports custom schemes.
   </description>
   <license>MIT</license>
   <keywords>cordova,links,universal</keywords>
 
-  <repo>git@github.com:e-imaxina/cordova-plugin-deeplinks.git</repo>
-  <issue>https://github.com/e-imaxina/cordova-plugin-deeplinks/issues</issue>
+  <repo>git@github.com:FacilityNet/gopay-plugin-deeplinks.git</repo>
+  <issue>https://github.com/FacilityNet/gopay-plugin-deeplinks/issues</issue>
 
   <engines>
     <engine name="cordova-ios" version=">=3.8"></engine>
@@ -54,11 +54,17 @@
     <header-file src="src/ios/JS/CDVInvokedUrlCommand+CULPlugin.h" target-dir="JS/"/>
 
 <!-- sources for Model folder -->
+    <source-file src="src/ios/Model/CULConfig.m" target-dir="Model/"/>
+    <header-file src="src/ios/Model/CULConfig.h" target-dir="Model/"/>
+
     <source-file src="src/ios/Model/CULHost.m" target-dir="Model/"/>
     <header-file src="src/ios/Model/CULHost.h" target-dir="Model/"/>
 
     <source-file src="src/ios/Model/CULPath.m" target-dir="Model/"/>
     <header-file src="src/ios/Model/CULPath.h" target-dir="Model/"/>
+
+    <source-file src="src/ios/Model/CULScheme.m" target-dir="Model/"/>
+    <header-file src="src/ios/Model/CULScheme.h" target-dir="Model/"/>
 
 <!-- sources for XML Parser folder -->
     <source-file src="src/ios/Parser/XML/CULXmlTags.m" target-dir="Parser/XML/"/>
@@ -92,8 +98,10 @@
 
 <!-- sources for package: com.nordnetab.cordova.ul.model -->
     <source-file src="src/android/com/nordnetab/cordova/ul/model/JSMessage.java" target-dir="src/com/nordnetab/cordova/ul/model/"/>
+    <source-file src="src/android/com/nordnetab/cordova/ul/model/ULConfig.java" target-dir="src/com/nordnetab/cordova/ul/model/"/>
     <source-file src="src/android/com/nordnetab/cordova/ul/model/ULHost.java" target-dir="src/com/nordnetab/cordova/ul/model/"/>
     <source-file src="src/android/com/nordnetab/cordova/ul/model/ULPath.java" target-dir="src/com/nordnetab/cordova/ul/model/"/>
+    <source-file src="src/android/com/nordnetab/cordova/ul/model/ULScheme.java" target-dir="src/com/nordnetab/cordova/ul/model/"/>
 
 <!-- sources for package: com.nordnetab.cordova.ul.parser -->
     <source-file src="src/android/com/nordnetab/cordova/ul/parser/ULConfigXmlParser.java" target-dir="src/com/nordnetab/cordova/ul/parser/"/>

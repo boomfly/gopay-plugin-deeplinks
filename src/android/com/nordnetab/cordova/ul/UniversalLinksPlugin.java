@@ -7,7 +7,9 @@ import android.util.Log;
 
 import com.nordnetab.cordova.ul.js.JSAction;
 import com.nordnetab.cordova.ul.model.JSMessage;
+import com.nordnetab.cordova.ul.model.ULConfig;
 import com.nordnetab.cordova.ul.model.ULHost;
+import com.nordnetab.cordova.ul.model.ULScheme;
 import com.nordnetab.cordova.ul.parser.ULConfigXmlParser;
 
 import org.apache.cordova.CallbackContext;
@@ -31,6 +33,9 @@ import java.util.Set;
  */
 public class UniversalLinksPlugin extends CordovaPlugin {
 
+    // list of custom schemes, defined in config.xml
+    private List<ULScheme> supportedSchemes;
+
     // list of hosts, defined in config.xml
     private List<ULHost> supportedHosts;
 
@@ -46,7 +51,9 @@ public class UniversalLinksPlugin extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
 
-        supportedHosts = new ULConfigXmlParser(cordova.getActivity()).parse();
+        ULConfig config = new ULConfigXmlParser(cordova.getActivity()).parse();
+        supportedSchemes = config.getSupportedSchemes();
+        supportedHosts = config.getSupportedHosts();
 
         if (subscribers == null) {
             subscribers = new HashMap<String, CallbackContext>();
@@ -172,7 +179,7 @@ public class UniversalLinksPlugin extends CordovaPlugin {
      * @param intent launch intent
      */
     private void handleIntent(Intent intent) {
-        if (intent == null || supportedHosts == null || supportedHosts.size() == 0) {
+        if (intent == null || ((supportedSchemes == null || supportedSchemes.size() == 0) && (supportedHosts == null || supportedHosts.size() == 0))) {
             return;
         }
 
@@ -188,14 +195,24 @@ public class UniversalLinksPlugin extends CordovaPlugin {
 
         // try to find host in the hosts list from the config.xml
         ULHost host = findHostByUrl(launchUri);
-        if (host == null) {
-            Log.d("UniversalLinks", "Host " + launchUri.getHost() + " is not supported");
+        if (host != null) {
+            // store message and try to consume it
+            storedMessage = new JSMessage(host, launchUri);
+            tryToConsumeEvent();
+
             return;
         }
 
-        // store message and try to consume it
-        storedMessage = new JSMessage(host, launchUri);
-        tryToConsumeEvent();
+        // try to find scheme in the schemes list from the config.xml
+        ULScheme scheme = findSchemeByUrl(launchUri);
+        if (scheme != null) {
+            // store message and try to consume it
+            storedMessage = new JSMessage(scheme, launchUri);
+            tryToConsumeEvent();
+            return;
+        }
+
+        Log.d("UniversalLinks", "Launch URI " + launchUri.toString() + " is not a supported custom scheme or host");
     }
 
     /**
@@ -216,6 +233,19 @@ public class UniversalLinksPlugin extends CordovaPlugin {
         }
 
         return host;
+    }
+
+    private ULScheme findSchemeByUrl(Uri url) {
+        ULScheme scheme = null;
+        final String launchScheme = url.getScheme().toLowerCase();
+        for (ULScheme supportedScheme : supportedSchemes) {
+            if (supportedScheme.getName().equals(launchScheme)) {
+                scheme = supportedScheme;
+                break;
+            }
+        }
+
+        return scheme;
     }
 
     // endregion
