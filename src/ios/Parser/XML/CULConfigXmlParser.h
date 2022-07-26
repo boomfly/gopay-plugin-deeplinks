@@ -5,7 +5,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CULHost.h"
+#import "CULConfig.h"
 
 /**
  *  Parser for config.xml. Reads only plugin-specific preferences.
@@ -15,8 +15,8 @@
 /**
  *  Parse config.xml
  *
- *  @return list of hosts, defined in the config file
+ *  @return list of supported custom schemes and hosts, defined in the config file
  */
-+ (NSArray<CULHost *> *)parse;
++ (CULConfig *)parse;
 
 @end

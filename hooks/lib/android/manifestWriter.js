@@ -58,8 +58,10 @@ function writePreferences(cordovaContext, pluginPreferences) {
 function removeOldOptions(manifestData) {
   var cleanManifest = manifestData;
   var activities = manifestData['manifest']['application'][0]['activity'];
+  var mainActivityIndex = getMainLaunchActivityIndex(activities);
+  var mainActivity = activities[mainActivityIndex];
 
-  activities.forEach(removeIntentFiltersFromActivity);
+  removeIntentFiltersFromActivity(mainActivity);
   cleanManifest['manifest']['application'][0]['activity'] = activities;
 
   return cleanManifest;
@@ -168,7 +170,7 @@ function isDataTagForUniversalLinks(data) {
   var hostIsSet = dataHost != null && dataHost.length > 0;
   var schemeIsSet = dataScheme != null && dataScheme.length > 0;
 
-  return hostIsSet && schemeIsSet;
+  return hostIsSet || schemeIsSet;
 }
 
 // endregion
@@ -198,9 +200,13 @@ function injectOptions(manifestData, pluginPreferences) {
   launchActivity = activitiesList[launchActivityIndex];
 
   // generate intent-filters
+  pluginPreferences.schemes.forEach(function(scheme) {
+    ulIntentFilters.push(createSchemeIntentFilter(scheme.name));
+  });
+
   pluginPreferences.hosts.forEach(function(host) {
     host.paths.forEach(function(hostPath) {
-      ulIntentFilters.push(createIntentFilter(host.name, host.scheme, hostPath));
+      ulIntentFilters.push(createHostIntentFilter(host.name, host.scheme, hostPath));
     });
   });
 
@@ -262,6 +268,37 @@ function isLaunchActivity(activity) {
 }
 
 /**
+ * Create JSON object that represent intent-filter for custom scheme.
+ * @param {String} scheme - custom scheme.
+ * @returns {Object} intent-filter as JSON object.
+ */
+function createSchemeIntentFilter(scheme) {
+  var intentFilter = {
+    'action': [{
+      '$': {
+        'android:name': 'android.intent.action.VIEW'
+      }
+    }],
+    'category': [{
+      '$': {
+        'android:name': 'android.intent.category.DEFAULT'
+      }
+    }, {
+      '$': {
+        'android:name': 'android.intent.category.BROWSABLE'
+      }
+    }],
+    'data': [{
+      '$': {
+        'android:scheme': scheme
+      }
+    }]
+  };
+
+  return intentFilter;
+}
+
+/**
  * Create JSON object that represent intent-filter for universal link.
  *
  * @param {String} host - host name
@@ -269,7 +306,7 @@ function isLaunchActivity(activity) {
  * @param {String} pathName - host path
  * @return {Object} intent-filter as a JSON object
  */
-function createIntentFilter(host, scheme, pathName) {
+function createHostIntentFilter(host, scheme, pathName) {
   var intentFilter = {
     '$': {
       'android:autoVerify': 'true'

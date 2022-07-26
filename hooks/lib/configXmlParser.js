@@ -34,6 +34,9 @@ function readPreferences(cordovaContext) {
 
   var xmlPreferences = ulXmlPreferences[0];
 
+  // read custom schemes
+  var schemes = constructSchemesList(xmlPreferences)
+
   // read hosts
   var hosts = constructHostsList(xmlPreferences);
 
@@ -41,6 +44,7 @@ function readPreferences(cordovaContext) {
   var iosTeamId = getTeamIdPreference(xmlPreferences);
 
   return {
+    'schemes': schemes,
     'hosts': hosts,
     'iosTeamId': iosTeamId
   };
@@ -56,6 +60,50 @@ function getTeamIdPreference(xmlPreferences) {
   }
 
   return null;
+}
+
+/**
+ * Construct list of scheme objects, defined in xml file.
+ *
+ * @param {Object} xmlPreferences - plugin preferences from config.xml as JSON object. 
+ * @returns {Array} array of JSON objects where each entry defines custom scheme data from config.xml.
+ */
+function constructSchemesList(xmlPreferences) {
+  var schemesList = [];
+
+  var xmlSchemesList = xmlPreferences['scheme'];
+  if (xmlSchemesList == null || xmlSchemesList.length == 0) {
+    return schemesList;
+  }
+
+  xmlSchemesList.forEach(function(xmlElement) {
+    var scheme = constructSchemeEntry(xmlElement);
+    if (scheme) {
+      schemesList.push(scheme);
+    }
+  });
+
+  return schemesList;
+}
+
+/**
+ * Construct custom scheme object from xml data.
+ * @param {Object} xmlElement - xml data to process.
+ * @returns {Object} scheme entry as JSON object.
+ */
+function constructSchemeEntry(xmlElement) {
+  var scheme = {
+    name: ''
+  }
+  var schemeProperties = xmlElement['$'];
+
+  if (schemeProperties == null || schemeProperties.length == 0) {
+    return null;
+  }
+
+  scheme.name = schemeProperties['name'];
+
+  return scheme;
 }
 
 /**

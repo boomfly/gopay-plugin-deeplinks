@@ -8,7 +8,7 @@
 
 @implementation CULConfigJsonParser
 
-+ (NSArray<CULHost *> *)parseConfig:(NSString *)pathToJsonConfig {
++ (CULConfig *)parseConfig:(NSString *)pathToJsonConfig {
     NSData *ulData = [NSData dataWithContentsOfFile:pathToJsonConfig];
     if (!ulData) {
         return nil;
@@ -19,8 +19,8 @@
     if (error) {
         return nil;
     }
-    
-    NSMutableArray<CULHost *> *preferences = [[NSMutableArray alloc] init];
+
+    CULConfig *preferences = [[CULConfig alloc] init];
     for (NSDictionary *jsonEntry in jsonObject) {
         CULHost *host = [[CULHost alloc] initWithHostName:jsonEntry[@"host"]
                                                    scheme:jsonEntry[@"scheme"]
@@ -28,7 +28,7 @@
         NSArray<CULPath *> *paths = [self parsePathsFromJson:jsonEntry[@"path"] forHost:host];
         [host addAllPaths:paths];
         
-        [preferences addObject:host];
+        [preferences addHost:host];
     }
     
     return preferences;

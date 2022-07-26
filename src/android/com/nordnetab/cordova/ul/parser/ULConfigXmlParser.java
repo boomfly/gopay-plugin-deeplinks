@@ -3,8 +3,10 @@ package com.nordnetab.cordova.ul.parser;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.nordnetab.cordova.ul.model.ULConfig;
 import com.nordnetab.cordova.ul.model.ULHost;
 import com.nordnetab.cordova.ul.model.ULPath;
+import com.nordnetab.cordova.ul.model.ULScheme;
 
 import org.apache.cordova.ConfigXmlParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -20,11 +22,13 @@ import java.util.List;
 public class ULConfigXmlParser extends ConfigXmlParser {
 
     private final Context context;
-    private List<ULHost> hostsList;
+    private ULConfig config;
 
     private boolean isInsideMainTag;
     private boolean didParseMainBlock;
+    private boolean isInsideSchemeBlock;
     private boolean isInsideHostBlock;
+    private ULScheme processedScheme;
     private ULHost processedHost;
 
     // region Public API
@@ -43,11 +47,11 @@ public class ULConfigXmlParser extends ConfigXmlParser {
      *
      * @return list of hosts, defined in the config file
      */
-    public List<ULHost> parse() {
+    public ULConfig parse() {
         resetValuesToDefaultState();
         super.parse(context);
 
-        return hostsList;
+        return config;
     }
 
     // endregion
@@ -70,6 +74,12 @@ public class ULConfigXmlParser extends ConfigXmlParser {
             return;
         }
 
+        if (!isInsideSchemeBlock && XmlTags.SCHEME_TAG.equals(name)) {
+            isInsideSchemeBlock = true;
+            processSchemeBlock(xml);
+            return;
+        }
+
         if (!isInsideHostBlock && XmlTags.HOST_TAG.equals(name)) {
             isInsideHostBlock = true;
             processHostBlock(xml);
@@ -89,9 +99,16 @@ public class ULConfigXmlParser extends ConfigXmlParser {
 
         final String name = xml.getName();
 
+        if (isInsideSchemeBlock && XmlTags.SCHEME_TAG.equals(name)) {
+            isInsideSchemeBlock = false;
+            config.getSupportedSchemes().add(processedScheme);
+            processedScheme = null;
+            return;
+        }
+
         if (isInsideHostBlock && XmlTags.HOST_TAG.equals(name)) {
             isInsideHostBlock = false;
-            hostsList.add(processedHost);
+            config.getSupportedHosts().add(processedHost);
             processedHost = null;
             return;
         }
@@ -100,6 +117,16 @@ public class ULConfigXmlParser extends ConfigXmlParser {
             isInsideMainTag = false;
             didParseMainBlock = true;
         }
+    }
+
+    /**
+     * Parse <scheme />
+     */
+    private void processSchemeBlock(XmlPullParser xml) {
+        final String schemeName = xml.getAttributeValue(null, XmlTags.SCHEME_NAME_ATTRIBUTE);
+        final String eventName = xml.getAttributeValue(null, XmlTags.SCHEME_EVENT_ATTRIBUTE);
+
+        processedScheme = new ULScheme(schemeName, eventName);
     }
 
     /**
@@ -145,10 +172,12 @@ public class ULConfigXmlParser extends ConfigXmlParser {
     // region Private API
 
     private void resetValuesToDefaultState() {
-        hostsList = new ArrayList<ULHost>();
+        config = new ULConfig();
         isInsideMainTag = false;
         didParseMainBlock = false;
+        isInsideSchemeBlock = false;
         isInsideHostBlock = false;
+        processedScheme = null;
         processedHost = null;
     }
 

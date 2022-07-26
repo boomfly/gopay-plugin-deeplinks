@@ -13,6 +13,21 @@ final class XmlTags {
     public static final String MAIN_TAG = "universal-links";
 
     /**
+     * Scheme main tag
+     */
+    public static final String SCHEME_TAG = "scheme";
+
+    /**
+     * Name attribute for the scheme entry
+     */
+    public static final String SCHEME_NAME_ATTRIBUTE = "name";
+
+    /**
+     * Event attribute for the scheme entry
+     */
+    public static final String SCHEME_EVENT_ATTRIBUTE = "event";
+
+    /**
      * Host main tag
      */
     public static final String HOST_TAG = "host";

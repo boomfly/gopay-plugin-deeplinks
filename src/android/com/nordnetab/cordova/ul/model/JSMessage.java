@@ -68,12 +68,23 @@ public class JSMessage extends JSONObject {
     /**
      * Constructor
      *
+     * @param scheme      scheme entry that corresponds to the launching url
+     * @param originalUri launch url
+     */
+    public JSMessage(ULScheme scheme, Uri originalUri) {
+        setEventName(scheme, null, originalUri);
+        setMessageData(scheme, null, originalUri);
+    }
+
+    /**
+     * Constructor
+     *
      * @param host        host entry that corresponds to the launching url
      * @param originalUri launch url
      */
     public JSMessage(ULHost host, Uri originalUri) {
-        setEventName(host, originalUri);
-        setMessageData(host, originalUri);
+        setEventName(null, host, originalUri);
+        setMessageData(null, host, originalUri);
     }
 
     /**
@@ -90,8 +101,12 @@ public class JSMessage extends JSONObject {
     /**
      * Set event name for this message entry.
      */
-    private void setEventName(ULHost host, Uri originalUri) {
-        eventName = getEventName(host, originalUri);
+    private void setEventName(ULScheme scheme, ULHost host, Uri originalUri) {
+        if (scheme != null) {
+            eventName = scheme.getEvent();
+        } else {
+            eventName = getEventName(host, originalUri);
+        }
 
         try {
             put(JSGeneralKeys.EVENT, eventName);
@@ -131,12 +146,18 @@ public class JSMessage extends JSONObject {
     /**
      * Fill data block with corresponding information.
      */
-    private void setMessageData(ULHost host, Uri originalUri) {
+    private void setMessageData(ULScheme scheme, ULHost host, Uri originalUri) {
         final JSONObject dataObject = new JSONObject();
 
         try {
             setOriginalUrl(dataObject, originalUri);
-            setHostData(dataObject, host);
+
+            if (scheme != null) {
+                setSchemeData(dataObject, scheme);
+            } else {
+                setHostData(dataObject, host);
+            }
+
             setPathData(dataObject, originalUri);
 
             put(JSGeneralKeys.DATA, dataObject);
@@ -150,6 +171,13 @@ public class JSMessage extends JSONObject {
      */
     private void setOriginalUrl(JSONObject dataObject, Uri originalUri) throws JSONException {
         dataObject.put(JSDataKeys.ORIGIN, originalUri.toString());
+    }
+
+    /**
+     * Put scheme name into data block
+     */
+    private void setSchemeData(JSONObject dataObject, ULScheme scheme) throws JSONException {
+        dataObject.put(JSDataKeys.SCHEME, scheme.getName());
     }
 
     /**

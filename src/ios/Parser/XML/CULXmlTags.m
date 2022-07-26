@@ -10,6 +10,10 @@
 
 NSString *const kCULMainXmlTag = @"universal-links";
 
+NSString *const kCULSchemeXmlTag = @"scheme";
+NSString *const kCULSchemeNameXmlAttribute = @"name";
+NSString *const kCULSchemeEventXmlAttribute = @"event";
+
 NSString *const kCULHostXmlTag = @"host";
 NSString *const kCULHostSchemeXmlAttribute = @"scheme";
 NSString *const kCULHostNameXmlAttribute = @"name";

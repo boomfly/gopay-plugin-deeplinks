@@ -10,10 +10,12 @@
 #import "CULXmlTags.h"
 
 @interface CULConfigXmlParser() <NSXMLParserDelegate> {
-    NSMutableArray<CULHost *> *_hostsList;
+    CULConfig *_config;
     BOOL _isInsideMainTag;
     BOOL _didParseMainBlock;
+    BOOL _isInsideSchemeBlock;
     BOOL _isInsideHostBlock;
+    CULScheme *_processedScheme;
     CULHost *_processedHost;
 }
 
@@ -23,25 +25,25 @@
 
 #pragma mark Public API
 
-+ (NSArray<CULHost *> *)parse {
++ (CULConfig *)parse {
     CULConfigXmlParser *parser = [[CULConfigXmlParser alloc] init];
     
     return [parser parseConfig];
 }
 
-- (NSArray<CULHost *> *)parseConfig {
+- (CULConfig *)parseConfig {
     NSURL *cordovaConfigURL = [NSURL fileURLWithPath:[NSBundle pathToCordovaConfigXml]];
     NSXMLParser *configParser = [[NSXMLParser alloc] initWithContentsOfURL:cordovaConfigURL];
     if (configParser == nil) {
         NSLog(@"Failed to initialize XML parser.");
         return nil;
     }
-    
-    _hostsList = [[NSMutableArray alloc] init];
+
+    _config = [[CULConfig alloc] init];
     [configParser setDelegate:self];
     [configParser parse];
     
-    return _hostsList;
+    return _config;
 }
 
 #pragma mark NSXMLParserDelegate implementation
@@ -59,7 +61,9 @@
         return;
     }
     
-    if ([elementName isEqualToString:kCULHostXmlTag]) {
+    if ([elementName isEqualToString:kCULSchemeXmlTag]) {
+        [self processSchemeTag:attributeDict];
+    } else if ([elementName isEqualToString:kCULHostXmlTag]) {
         [self processHostTag:attributeDict];
     } else if ([elementName isEqualToString:kCULPathXmlTag]) {
         [self processPathTag:attributeDict];
@@ -71,13 +75,27 @@
         return;
     }
     
-    if ([elementName isEqualToString:kCULHostXmlTag]) {
+    if ([elementName isEqualToString:kCULSchemeXmlTag]) {
+        _isInsideSchemeBlock = NO;
+        [_config addScheme:_processedScheme];
+    } else if ([elementName isEqualToString:kCULHostXmlTag]) {
         _isInsideHostBlock = NO;
-        [_hostsList addObject:_processedHost];
+        [_config addHost:_processedHost];
     }
 }
 
 #pragma mark XML Processing
+
+/**
+ *  Parse scheme tag.
+ *
+ * @param attributes scheme tag attributes
+ */
+- (void)processSchemeTag:(NSDictionary<NSString *, NSString *> *)attributes {
+    _processedScheme = [[CULScheme alloc] initWithSchemeName:attributes[kCULSchemeNameXmlAttribute]
+                                                       event:attributes[kCULSchemeEventXmlAttribute]];
+    _isInsideSchemeBlock = YES;
+}
 
 /**
  *  Parse host tag.

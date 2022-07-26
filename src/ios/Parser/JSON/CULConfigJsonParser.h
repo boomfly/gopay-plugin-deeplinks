@@ -5,7 +5,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CULHost.h"
+#import "CULConfig.h"
 
 /**
  *  JSON parser for plugin's preferences.
@@ -15,8 +15,8 @@
 /**
  *  Parse JSON config.
  *
- *  @return list of hosts, defined in the config file
+ *  @return list of schemes and hosts, defined in the config file
  */
-+ (NSArray<CULHost *> *)parseConfig:(NSString *)pathToJsonConfig;
++ (CULConfig *)parseConfig:(NSString *)pathToJsonConfig;
 
 @end
