@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.1.1](https://github.com/e-imaxina/cordova-plugin-deeplinks/compare/v1.1.0...v1.1.1) (2019-08-13)
+## [2.0.0](https://github.com/FacilityNet/gopay-plugin-deeplinks/compare/v2.0.0...v2.0.0) (2022-07-26)
+
+### Features
+
+* Add support for custom URL schemes as a supplement to universal links
+
+
+## [1.1.1](https://github.com/e-imaxina/cordova-plugin-deeplinks/compare/v1.1.0...v1.1.1) (2019-08-13)
 
 
 ### Bug Fixes
