@@ -66,6 +66,7 @@ function getUrlTypes(projectInfo) {
     var urlTypes = projectInfo[CF_BUNDLE_URL_TYPES];
 
     if (!urlTypes) {
+        console.log(`${CF_BUNDLE_URL_TYPES} entry not found [adding it]`)
         urlTypes = [];
     }
 
@@ -77,10 +78,12 @@ function getUrlSchemesIndex(urlTypes) {
 
     urlTypes.some(function(entry, index) {
         if (entry.hasOwnProperty(CF_BUNDLE_URL_SCHEMES)) {
+            console.log(`${CF_BUNDLE_URL_SCHEMES} dictionary found at index ${index} under ${CF_BUNDLE_URL_TYPES} [replacing it]`)
             foundIndex = index;
             return true;
         }
 
+        console.log(`${CF_BUNDLE_URL_SCHEMES} dictionary not found under ${CF_BUNDLE_URL_TYPES} [adding it]`)
         return false;
     });
 
@@ -91,7 +94,7 @@ function generateUrlSchemesDictionary(pluginPreferences) {
     var content = generateUrlSchemesArray(pluginPreferences);
 
     return ({
-        CF_BUNDLE_URL_SCHEMES: content
+        [CF_BUNDLE_URL_SCHEMES]: content
     })
 }
 
