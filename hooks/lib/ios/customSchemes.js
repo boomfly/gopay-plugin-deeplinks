@@ -5,10 +5,13 @@ var plist = require('plist');
 var ConfigXmlHelper = require('../configXmlHelper.js');
 
 var CF_BUNDLE_URL_TYPES = "CFBundleURLTypes";
+var CF_BUNDLE_URL_NAME = "CFBundleURLName";
+var CF_BUNDLE_TYPE_ROLE = "CFBundleTypeRole";
+var CF_BUNDLE_TYPE_ROLE_EDITOR = "Editor";
 var CF_BUNDLE_URL_SCHEMES = "CFBundleURLSchemes";
 
 var context;
-var projectName;
+var configHelper;
 var projectInfoFilePath;
 
 module.exports = {
@@ -19,7 +22,8 @@ function generateUrlSchemes(cordovaContext, pluginPreferences) {
     context = cordovaContext;
 
     var currentProjectInfo = getProjectInfoFileContent();
-    var newProjectInfo = injectPreferences(currentProjectInfo, pluginPreferences);
+    var cleanedProjectInfo = removeOldCustomSchemes(currentProjectInfo);
+    var newProjectInfo = injectPreferences(cleanedProjectInfo, pluginPreferences);
 
     saveContentToProjectInfoFile(newProjectInfo);
 }
@@ -45,19 +49,27 @@ function getProjectInfoFileContent() {
     return plist.parse(content);
 }
 
+function removeOldCustomSchemes(currentProjectInfo) {
+    console.log("Removing old custom schemes from project info plist file")
+
+    var cleanedProjectInfo = currentProjectInfo;
+    var urlTypes = getUrlTypes(currentProjectInfo);
+    var cleanedUrlTypes = urlTypes.filter(function(entry) {
+        // Remove any entry with the schemes property
+        return !entry.hasOwnProperty(CF_BUNDLE_URL_SCHEMES);
+    });
+
+    cleanedProjectInfo[CF_BUNDLE_URL_TYPES] = cleanedUrlTypes;
+    return cleanedProjectInfo;
+}
+
 function injectPreferences(currentProjectInfo, pluginPreferences) {
     var newProjectInfo = currentProjectInfo;
     var urlTypes = getUrlTypes(newProjectInfo);
-    var urlSchemesIndex = getUrlSchemesIndex(urlTypes);
 
     var content = generateUrlSchemesDictionary(pluginPreferences);
 
-    if (urlSchemesIndex == -1) {
-        urlTypes.push(content);
-    } else {
-        urlTypes[urlSchemesIndex] = content;
-    }
-
+    urlTypes.push(content);
     newProjectInfo[CF_BUNDLE_URL_TYPES] = urlTypes;
     return newProjectInfo;
 }
@@ -73,28 +85,13 @@ function getUrlTypes(projectInfo) {
     return urlTypes;
 }
 
-function getUrlSchemesIndex(urlTypes) {
-    var foundIndex = -1;
-
-    urlTypes.some(function(entry, index) {
-        if (entry.hasOwnProperty(CF_BUNDLE_URL_SCHEMES)) {
-            console.log(`${CF_BUNDLE_URL_SCHEMES} dictionary found at index ${index} under ${CF_BUNDLE_URL_TYPES} [replacing it]`)
-            foundIndex = index;
-            return true;
-        }
-
-        console.log(`${CF_BUNDLE_URL_SCHEMES} dictionary not found under ${CF_BUNDLE_URL_TYPES} [adding it]`)
-        return false;
-    });
-
-    return foundIndex;
-}
-
 function generateUrlSchemesDictionary(pluginPreferences) {
     var content = generateUrlSchemesArray(pluginPreferences);
 
     return ({
-        [CF_BUNDLE_URL_SCHEMES]: content
+        [CF_BUNDLE_URL_NAME]: getPackageName(),
+        [CF_BUNDLE_TYPE_ROLE]: CF_BUNDLE_TYPE_ROLE_EDITOR,
+        [CF_BUNDLE_URL_SCHEMES]: content,
     })
 }
 
@@ -110,6 +107,7 @@ function generateUrlSchemesArray(pluginPreferences) {
 }
 
 function entryForCustomScheme(scheme) {
+    console.log(`Adding custom scheme to project info plist file: ${scheme.name}`)
     return scheme.name;
 }
 
@@ -143,12 +141,19 @@ function getProjectRoot() {
  * @return {String} project name
  */
 function getProjectName() {
-    if (projectName === undefined) {
-        var configXmlHelper = new ConfigXmlHelper(context);
-        projectName = configXmlHelper.getProjectName();
+    if (configHelper === undefined) {
+        configHelper = new ConfigXmlHelper(context);
     }
 
-    return projectName;
+    return configHelper.getProjectName();
+}
+
+function getPackageName() {
+    if (configHelper === undefined) {
+        configHelper = new ConfigXmlHelper(context);
+    }
+
+    return configHelper.getPackageName();
 }
 
 // endregion
