@@ -13,7 +13,7 @@ static NSString *const DEFAULT_EVENT = @"didLaunchAppFromLink";
 
 @end
 
-@implementation CULHost
+@implementation CULScheme
 
 - (instancetype)initWithSchemeName:(NSString *)name event:(NSString *)event {
     self = [super init];
